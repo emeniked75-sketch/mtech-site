@@ -578,9 +578,29 @@
   const REDDIT = "https://www.reddit.com/user/Satorugojo6669";
   const TUMBLR = "https://www.tumblr.com/anonymousx999";
 
-  function contactLinksHTML(){
+  // ---- Ready-made WhatsApp messages (opens WhatsApp with the text already typed, just press send) ----
+  const WA_GENERAL = "Hello M.TECH! I found your website and I'd like to know more. What is M.TECH, and what services do you offer?";
+  const WA_MESSAGES = {
+    "Debugging": "Hello M.TECH! I'm messaging you from your website about your Debugging service. My code or app has a bug that I can't fix. Can you help me find and fix it? How does it work and what would it cost?",
+    "2D Animation": "Hello M.TECH! I'm messaging you from your website about your 2D Animation service. I'd like to ask about explainer videos, commercials or branding animation. Can we discuss my idea and the price?",
+    "3D Animation": "Hello M.TECH! I'm messaging you from your website about your 3D Animation service. I'd like to ask about 3D modeling, rendering or an animated project. Can we discuss my idea and the price?",
+    "App Testing": "Hello M.TECH! I'm messaging you from your website about your App Testing service. I'd like my app tested for bugs and problems before launch. How does it work and what would it cost?",
+    "Web Creation": "Hello M.TECH! I'm messaging you from your website about your Web Creation service. I'd like to have a website built. Can we discuss what I need, the timeline and the price?",
+    "Web Hosting": "Hello M.TECH! I'm messaging you from your website about your Web Hosting service. I'd like to host my website with you. What options and prices do you have?",
+    "Web Maintenance": "Hello M.TECH! I'm messaging you from your website about your Web Maintenance service. I need someone to keep my website updated and working well. What do you offer and what does it cost?",
+    "Software Maintenance": "Hello M.TECH! I'm messaging you from your website about your Software Maintenance service. I need help maintaining and updating my software. What do you offer and what does it cost?",
+    "Game Build": "Hello M.TECH! I'm messaging you from your website about your Game Build service. I'd like a game built. Can we discuss my idea, the timeline and the price?",
+    "Purchase Devices": "Hello M.TECH! I'm messaging you from your website because I'd like to purchase a device. Which devices do you have available, and what are the prices?",
+    "Purchase Other Services": "Hello M.TECH! I'm messaging you from your website because I'd like to purchase one of your other services. Can you tell me what's available and how to order?"
+  };
+  function waLink(service){
+    const text = WA_MESSAGES[service] || WA_GENERAL;
+    return WHATSAPP + "?text=" + encodeURIComponent(text);
+  }
+
+  function contactLinksHTML(service){
     return `<div class="contact-links">
-      <a href="${WHATSAPP}" target="_blank" rel="noopener">WhatsApp</a>
+      <a href="${waLink(service)}" target="_blank" rel="noopener">WhatsApp</a>
       <a href="${EMAIL}">Email</a>
       <a href="${TIKTOK}" target="_blank" rel="noopener">TikTok</a>
       <a href="${REDDIT}" target="_blank" rel="noopener">Reddit</a>
@@ -611,7 +631,7 @@
   SERVICES.forEach(name => {
     const d = document.createElement('details');
     d.className = 'svc-item';
-    d.innerHTML = `<summary>${name}</summary><div class="svc-body">Contact us about ${name.toLowerCase()} using any channel below.${contactLinksHTML()}</div>`;
+    d.innerHTML = `<summary>${name}</summary><div class="svc-body">Contact us about ${name.toLowerCase()} using any channel below.${contactLinksHTML(name)}</div>`;
     svcList.appendChild(d);
   });
   document.getElementById('cf-service').innerHTML = SERVICES.map(s => `<option>${s}</option>`).join("");
@@ -685,7 +705,7 @@
 
   // ---- Contact page ----
   document.getElementById('contact-cards').innerHTML = [
-    {ic:"W", t:"WhatsApp", s:"+234 902 182 5786", h:WHATSAPP},
+    {ic:"W", t:"WhatsApp", s:"+234 902 182 5786", h:waLink()},
     {ic:"@", t:"Email", s:EMAIL_ADDR, h:EMAIL},
     {ic:"T", t:"TikTok", s:"@anonymous.x625", h:TIKTOK},
     {ic:"R", t:"Reddit", s:"u/Satorugojo6669", h:REDDIT},
