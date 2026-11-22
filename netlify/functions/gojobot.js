@@ -1,9 +1,9 @@
 // Netlify Function: /.netlify/functions/gojobot
 // Needs ONE environment variable in Netlify: GEMINI_API_KEY
-// Optional: GEMINI_MODEL (default gemini-2.5-flash)
+// Optional: GEMINI_MODEL (default gemini-3.8-flash)
 
 const FIREBASE_API_KEY = "AIzaSyCogkwPWSc9oVV7vqEjlrD9bbxHIbNlqQU"; // public web key from index.html
-const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 
 const GENERAL_PROMPT =
   "You are Gojobot, the friendly assistant for M.TECH, a technology company offering 3D and 2D animation, " +
@@ -41,10 +41,16 @@ async function verifyUser(token) {
     "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + FIREBASE_API_KEY,
     { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ idToken: token }) }
   );
-  if (!r.ok) return null;
+  if (!r.ok) {
+    console.error("Firebase lookup failed", r.status);
+    return null;
+  }
   const data = await r.json();
   const u = data.users && data.users[0];
-  if (!u || !u.emailVerified) return null;
+  if (!u || !u.emailVerified) {
+    console.error("User missing or email not verified");
+    return null;
+  }
   return u.localId;
 }
 
@@ -52,14 +58,17 @@ exports.handler = async (event) => {
   if (event.httpMethod !== "POST") return json(405, { error: "ai_failed" });
 
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return json(500, { error: "not_configured" });
+  if (!apiKey) {
+    console.error("GEMINI_API_KEY is not set");
+    return json(500, { error: "not_configured" });
+  }
 
   const auth = event.headers.authorization || event.headers.Authorization || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   if (!token) return json(401, { error: "sign_in" });
 
   let uid;
-  try { uid = await verifyUser(token); } catch (e) { uid = null; }
+  try { uid = await verifyUser(token); } catch (e) { console.error("verifyUser threw", e); uid = null; }
   if (!uid) return json(401, { error: "sign_in" });
   if (tooFast(uid)) return json(429, { error: "slow_down" });
 
@@ -89,14 +98,24 @@ exports.handler = async (event) => {
         }),
       }
     );
-    if (r.status === 429 || r.status === 503) return json(503, { error: "busy" });
-    if (!r.ok) return json(502, { error: "ai_failed" });
+    if (r.status === 429 || r.status === 503) {
+      console.error("Gemini busy/quota", r.status, (await r.text()).slice(0, 300));
+      return json(503, { error: "busy" });
+    }
+    if (!r.ok) {
+      console.error("Gemini error", r.status, "model=" + MODEL, (await r.text()).slice(0, 300));
+      return json(502, { error: "ai_failed" });
+    }
     const data = await r.json();
     const reply = (((data.candidates || [])[0] || {}).content || {}).parts;
     const text = reply ? reply.map(p => p.text || "").join("").trim() : "";
-    if (!text) return json(502, { error: "ai_failed" });
+    if (!text) {
+      console.error("Gemini returned no text", JSON.stringify(data).slice(0, 300));
+      return json(502, { error: "ai_failed" });
+    }
     return json(200, { reply: text, mode: coding ? "coding" : "general" });
   } catch (e) {
+    console.error("Gemini request threw", e);
     return json(502, { error: "ai_failed" });
   }
 };
