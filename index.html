@@ -225,7 +225,40 @@
   #ai-input:focus{border-color:var(--c2);}
   #ai-send[disabled]{opacity:.55;cursor:not-allowed;transform:none;}
   .ai-note{text-align:center;color:var(--muted);font-size:.76rem;margin:.9rem auto 0;max-width:820px;}
-  @media(max-width:820px){.ai-log{height:400px;}.ai-msg{max-width:94%;}}
+
+  /* ---- Gojobot design polish ---- */
+  .ai-box{position:relative;background:linear-gradient(180deg,#0e1a2e,#0a1322);box-shadow:0 24px 70px rgba(0,0,0,.5),0 0 0 1px rgba(34,211,238,.07) inset,0 0 60px rgba(30,111,217,.12);}
+  .ai-box::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:var(--grad);opacity:.85;}
+  .ai-head{background:radial-gradient(500px 120px at 0% 0%,rgba(30,111,217,.28),transparent 70%),#0b1628;}
+  .ai-ava{background:linear-gradient(135deg,#0b2a52,#08203f);box-shadow:0 0 18px rgba(34,211,238,.25);}
+  .ai-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#34d399;margin-left:.5rem;box-shadow:0 0 0 3px rgba(52,211,153,.18);vertical-align:middle;}
+  #ai-mode{display:inline-block;margin-top:.15rem;padding:.12rem .6rem;border-radius:999px;border:1px solid var(--line);background:#08111f;font-size:.7rem;}
+  #ai-mode.coding{border-color:rgba(34,211,238,.5);background:rgba(34,211,238,.1);}
+  .ai-log{background:radial-gradient(600px 260px at 100% 0%,rgba(34,211,238,.05),transparent 70%);scrollbar-width:thin;scrollbar-color:#1c2b44 transparent;}
+  .ai-log::-webkit-scrollbar{width:8px}.ai-log::-webkit-scrollbar-thumb{background:#1c2b44;border-radius:8px}
+  .ai-msg{animation:aiIn .22s ease-out;}
+  @keyframes aiIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .ai-msg.bot{background:linear-gradient(180deg,#0d1a2f,#0a1424);box-shadow:0 4px 16px rgba(0,0,0,.25);}
+  .ai-msg.user{box-shadow:0 6px 20px rgba(34,211,238,.22);}
+  .ai-chips{padding-top:.2rem;border-top:1px solid transparent;}
+  .ai-chips button{background:#0a1424;font-family:inherit;}
+  .ai-chips button:hover{background:rgba(34,211,238,.08);transform:translateY(-1px);}
+  .ai-chips button[data-cmd]{color:var(--c2);border-color:rgba(34,211,238,.35);font-family:Consolas,monospace;}
+  #ai-form{background:#0a1424;}
+  #ai-input{background:#050a14;border-radius:12px;transition:border-color .15s,box-shadow .15s;}
+  #ai-input:focus{box-shadow:0 0 0 3px rgba(34,211,238,.12);}
+  .cb-wrap{padding:.2rem 0}
+  .cb-title{font-weight:700;margin-bottom:.5rem}
+  .cb{display:grid;grid-template-columns:repeat(8,1fr);width:min(100%,336px);aspect-ratio:1;border-radius:12px;overflow:hidden;border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.45),0 0 0 4px #0b1830;}
+  .cb button{border:0;padding:0;margin:0;font-size:clamp(18px,6.4vw,28px);line-height:1;cursor:pointer;position:relative;transition:filter .12s;font-family:'Segoe UI Symbol','Segoe UI',sans-serif;}
+  .cb button.l{background:#9db4d8}.cb button.d{background:#3d5f96}
+  .cb button:hover{filter:brightness(1.12)}
+  .cb button.w{color:#fff;text-shadow:0 0 3px #04101f,0 1px 2px #04101f}.cb button.k{color:#071327;text-shadow:0 0 2px rgba(255,255,255,.25)}
+  .cb button.sel{background:linear-gradient(135deg,#1e6fd9,#22d3ee)!important;box-shadow:inset 0 0 0 2px #fff}
+  .cb button.tg::after{content:"";position:absolute;left:50%;top:50%;width:30%;height:30%;transform:translate(-50%,-50%);border-radius:50%;background:rgba(34,211,238,.85);box-shadow:0 0 10px rgba(34,211,238,.9)}
+  .cb-note{margin-top:.6rem;color:var(--muted);font-size:.85rem}
+  .cb-note b{color:var(--c2)}
+  @media(max-width:820px){.ai-log{height:min(60vh,420px);}.ai-msg{max-width:94%;}}
 
   footer{border-top:1px solid var(--line);background:var(--bg2);}
   .foot{max-width:1120px;margin:0 auto;padding:2.5rem 1.5rem;display:flex;justify-content:space-between;align-items:center;gap:1.5rem;flex-wrap:wrap;}
@@ -435,7 +468,7 @@
     <div class="ai-box">
       <div class="ai-head">
         <div class="ai-ava"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTUwIiByb2xlPSJpbWciIGFyaWEtbGFiZWw9Ik0uVEVDSCBtYXJrIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZzEiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWU2ZmQ5Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzIyZDNlZSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZzIiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIwIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzY3ZThmOSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPCEtLSBNIC0tPgogIDxwYXRoIGQ9Ik0xNCAxNDAgVjE0IEg0NiBMOTIgODIgTDExMiA1MiBWMTQwIEg5MiBWOTIgTDgwIDExMiBINjYgTDM0IDYyIFYxNDAgWiIgZmlsbD0idXJsKCNnMSkiLz4KICA8cGF0aCBkPSJNNDYgMTQgTDkyIDgyIEwxMTIgNTIgTDY2IDE0IFoiIGZpbGw9IiMwYjNhN2EiIG9wYWNpdHk9Ii41NSIvPgogIDwhLS0gVCAtLT4KICA8cGF0aCBkPSJNODQgMTQgSDE5MCBMMTc4IDM0IEgxNDYgTDEyOCAxNDAgSDEwNCBMMTIyIDM0IEg5NiBaIiBmaWxsPSJ1cmwoI2cyKSIvPgogIDxwYXRoIGQ9Ik0xNDYgMzQgTDEzOCA3OCBIMTIyIEwxMzAgMzQgWiIgZmlsbD0iIzBiM2E3YSIgb3BhY2l0eT0iLjM1Ii8+Cjwvc3ZnPgo=" alt="" /></div>
-        <div><b>M.TECH AI Gojobot</b><span id="ai-mode">General mode</span></div>
+        <div><b>M.TECH AI Gojobot<i class="ai-dot" title="Online"></i></b><span id="ai-mode">General mode</span></div>
         <button class="btn ghost" id="ai-clear" type="button">New chat</button>
       </div>
       <div class="ai-log" id="ai-log" aria-live="polite"></div>
@@ -821,7 +854,7 @@
     }
     function reset(){
       history = []; log.innerHTML = ''; setMode('general');
-      add('bot', "Hi, I'm **Gojobot**, the M.TECH assistant. Ask me about our services, or ask a coding question and I'll switch to coding mode.");
+      add('bot', "Hi, I'm **Gojobot**, the M.TECH assistant. Ask me about our services, or ask a coding question and I'll switch to coding mode.\n\nTry `/chess`, `/calculator 2+3*4`, `/search topic` or `/help`.");
     }
 
     log.addEventListener('click', e => {
@@ -845,6 +878,7 @@
       text = text.trim(); if (!text || busy) return;
       busy = true; sendBtn.disabled = true;
       add('user', text); input.value = ''; input.style.height = 'auto';
+      if (text.charAt(0) === '/' && window.GojoLocal && GojoLocal.handle(text, add, log, setMode)) { busy = false; sendBtn.disabled = false; input.focus(); return; }
       const typing = add('bot', ''); typing.innerHTML = '<span class="typing"><i></i><i></i><i></i></span>';
       try {
         const user = auth.currentUser;
@@ -881,13 +915,17 @@
     document.getElementById('ai-clear').addEventListener('click', reset);
     document.getElementById('ai-chips').innerHTML = [
       "What services does M.TECH offer?",
+
       "How do I order a website?",
       "Explain a NullPointerException in Java",
       "How do I run a Java program in IntelliJ?"
-    ].map(q => '<button type="button">'+q+'</button>').join('');
+    ].map(q => '<button type="button">'+q+'</button>').join('') + ['/chess','/calculator','/calculator 12*(3+4)','/help'].map(q => '<button type="button" data-cmd>'+q+'</button>').join('');
     document.getElementById('ai-chips').addEventListener('click', e => { if (e.target.tagName === 'BUTTON') send(e.target.textContent); });
     reset();
   })();
 </script>
+<script src="gojobot-calc.js"></script>
+<script src="gojobot-java.js"></script>
+<script src="gojobot-local.js"></script>
 </body>
 </html>
