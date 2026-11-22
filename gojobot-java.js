@@ -34,4 +34,41 @@ window.GojoJava = (function () {
     modal.querySelector('#gj-close').onclick = () => modal.classList.remove('on');
     modal.addEventListener('mousedown', e => { if (e.target === modal) modal.classList.remove('on'); });
     modal.querySelector('#gj-restart').onclick = () => { launched = {}; run(current); };
-    addEventListener('keydown', e
+    addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('on') && !e.target.closest('#gj-stage')) modal.classList.remove('on'); });
+  }
+
+  function load() {
+    if (ready) return ready;
+    ready = new Promise((res, rej) => {
+      const s = document.createElement('script'); s.src = LOADER; s.onload = res; s.onerror = () => rej(new Error('Could not download the Java engine. Check your internet connection.'));
+      document.head.appendChild(s);
+    }).then(async () => {
+      await cheerpjInit({ version: 17 });
+      cheerpjCreateDisplay(980, 800, stage);
+    });
+    ready.catch(() => { ready = null; });
+    return ready;
+  }
+
+  let current = 'chess';
+  async function run(which) {
+    current = which;
+    const msg = status.querySelector('#gj-msg');
+    if (launched[which]) { status.classList.add('hide'); return; }
+    try {
+      status.classList.remove('hide'); msg.textContent = 'Loading the Java engine (first time takes a little while)...';
+      await load();
+      msg.textContent = 'Starting ' + TITLES[which] + '...';
+      launched[which] = true;
+      cheerpjRunMain('com.gojo.GojoWeb', JAR, which).catch(() => { launched[which] = false; });
+      setTimeout(() => status.classList.add('hide'), 1800);
+    } catch (e) {
+      launched[which] = false;
+      status.classList.remove('hide');
+      msg.textContent = (e && e.message) || 'The Java engine could not start.';
+    }
+  }
+
+  function open(which) { build(); title.textContent = TITLES[which]; modal.classList.add('on'); run(which); }
+  return { open };
+})();
