@@ -15,4 +15,4 @@ in the Firebase console.
 3. On netlify.com: Add new site > Import an existing project > pick the repo.
    Leave the build command blank; publish directory is "." (this is already
    set in netlify.toml).
- 
+  
