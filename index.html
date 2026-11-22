@@ -47,6 +47,8 @@
     border-radius:10px;color:#fff;font-size:.92rem;outline:none;transition:border-color .15s;}
   .auth-card input:focus{border-color:var(--c2);}
   .auth-card button.primary{width:100%;padding:.85rem;background:var(--grad);color:#04101f;border:none;border-radius:10px;font-weight:700;font-size:.95rem;}
+  .auth-card .remember{display:flex;align-items:center;gap:.55rem;margin:.1rem 0 1rem;color:var(--muted);font-size:.85rem;cursor:pointer;user-select:none;}
+  .auth-card .remember input{width:auto;margin:0;accent-color:#22d3ee;cursor:pointer;}
   .switch-mode{margin:1rem 0 0;font-size:.85rem;color:var(--muted);text-align:center;}
   .switch-mode a{color:var(--c2);cursor:pointer;font-weight:600;}
   #auth-error{color:#ff7b7b;font-size:.84rem;min-height:1.2rem;margin-top:.4rem;}
@@ -225,6 +227,7 @@
       <div class="divider"><span>or</span></div>
       <input type="email" id="email-input" placeholder="Email" autocomplete="email" />
       <input type="password" id="password-input" placeholder="Password" autocomplete="current-password" />
+      <label class="remember"><input type="checkbox" id="remember-me" checked /> Remember me on this device</label>
       <button class="primary" id="email-submit-btn">Sign Up</button>
       <div id="auth-error"></div>
       <p class="switch-mode">
@@ -443,6 +446,15 @@
     authError.textContent = "";
   });
 
+  // "Remember me": checked = stay signed in after closing the browser; unchecked = sign in again next time.
+  const rememberBox = document.getElementById('remember-me');
+  function applyPersistence(){
+    const P = firebase.auth.Auth.Persistence;
+    return auth.setPersistence(rememberBox.checked ? P.LOCAL : P.SESSION);
+  }
+  rememberBox.addEventListener('change', () => applyPersistence().catch(() => {}));
+  applyPersistence().catch(() => {});
+
   document.getElementById('google-signin-btn').addEventListener('click', () => {
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider).catch(e => authError.textContent = e.message);
@@ -454,9 +466,9 @@
     authError.textContent = "";
     if (!email || !pass) { authError.textContent = "Enter an email and password."; return; }
 
-    const action = mode === "signup"
+    const action = applyPersistence().then(() => mode === "signup"
       ? auth.createUserWithEmailAndPassword(email, pass).then(cred => sendVerify(cred.user))
-      : auth.signInWithEmailAndPassword(email, pass);
+      : auth.signInWithEmailAndPassword(email, pass));
 
     action.catch(e => authError.textContent = e.message);
   });
