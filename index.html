@@ -51,6 +51,16 @@
   .switch-mode a{color:var(--c2);cursor:pointer;font-weight:600;}
   #auth-error{color:#ff7b7b;font-size:.84rem;min-height:1.2rem;margin-top:.4rem;}
 
+  /* ---------- VERIFY EMAIL ---------- */
+  #verify-screen{display:none;min-height:100vh;align-items:center;justify-content:center;padding:2rem;
+    background:radial-gradient(900px 500px at 80% 0%,#0e3a74 0%,transparent 60%),radial-gradient(700px 500px at 0% 100%,#0a5870 0%,transparent 55%),var(--bg);}
+  #verify-screen .auth-card{text-align:center;max-width:400px;}
+  #verify-screen .mail-ic{width:64px;height:64px;margin:0 auto 1rem;border-radius:18px;background:var(--grad);display:flex;align-items:center;justify-content:center;}
+  #verify-screen .em{color:#fff;font-weight:700;word-break:break-all;}
+  #verify-screen .btn{width:100%;margin-top:.7rem;}
+  #verify-screen .btn[disabled]{opacity:.55;cursor:not-allowed;transform:none;}
+  #verify-msg{min-height:1.2rem;font-size:.84rem;margin-top:.9rem;}
+
   /* ---------- SHELL ---------- */
   #app{display:none;min-height:100vh;}
   header.topbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1.6rem;
@@ -222,6 +232,21 @@
         <a id="mode-toggle">Log in</a>
       </p>
     </div>
+  </div>
+</div>
+
+<!-- ============ VERIFY EMAIL SCREEN ============ -->
+<div id="verify-screen">
+  <div class="auth-card">
+    <div class="mail-ic">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#04101f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+    </div>
+    <h2>Verify your email</h2>
+    <p class="lead">We sent a verification link to<br><span class="em" id="verify-email"></span><br>Open it, then come back here. Check your spam folder if you don't see it.</p>
+    <button class="btn primary" id="check-btn">I've verified my email</button>
+    <button class="btn ghost" id="resend-btn">Resend email</button>
+    <button class="btn ghost" id="verify-signout">Use a different account</button>
+    <div id="verify-msg"></div>
   </div>
 </div>
 
@@ -430,16 +455,80 @@
     if (!email || !pass) { authError.textContent = "Enter an email and password."; return; }
 
     const action = mode === "signup"
-      ? auth.createUserWithEmailAndPassword(email, pass)
+      ? auth.createUserWithEmailAndPassword(email, pass).then(cred => sendVerify(cred.user))
       : auth.signInWithEmailAndPassword(email, pass);
 
     action.catch(e => authError.textContent = e.message);
   });
 
-  auth.onAuthStateChanged(user => {
+  const verifyScreen = document.getElementById('verify-screen');
+  const verifyMsg = document.getElementById('verify-msg');
+  let pollTimer = null, cooldownTimer = null;
+
+  function say(text, ok){ verifyMsg.style.color = ok ? '#6ee7b7' : '#ff7b7b'; verifyMsg.textContent = text; }
+
+  // Only verified users (Google accounts count as verified) can enter the app.
+  function render(user){
+    clearInterval(pollTimer);
+    const ok = !!(user && user.emailVerified);
     document.getElementById('login-screen').style.display = user ? 'none' : 'flex';
-    document.getElementById('app').style.display = user ? 'block' : 'none';
+    verifyScreen.style.display = (user && !ok) ? 'flex' : 'none';
+    document.getElementById('app').style.display = ok ? 'block' : 'none';
+    if (user && !ok) {
+      document.getElementById('verify-email').textContent = user.email;
+      // check every 3 seconds so the page continues by itself after the link is clicked
+      pollTimer = setInterval(async () => {
+        try {
+          await user.reload();
+          if (auth.currentUser && auth.currentUser.emailVerified) render(auth.currentUser);
+        } catch (e) {}
+      }, 3000);
+    }
+  }
+  auth.onAuthStateChanged(render);
+
+  async function sendVerify(user){
+    try {
+      await user.sendEmailVerification({ url: window.location.origin });
+    } catch (e) {
+      // the site address may not be in Firebase's authorized domains yet: send without the return link
+      if (e.code === 'auth/unauthorized-continue-uri' || e.code === 'auth/invalid-continue-uri') await user.sendEmailVerification();
+      else throw e;
+    }
+  }
+
+  function startCooldown(btn){
+    let n = 60;
+    btn.disabled = true; btn.textContent = 'Resend email (60s)';
+    clearInterval(cooldownTimer);
+    cooldownTimer = setInterval(() => {
+      n--;
+      if (n <= 0) { clearInterval(cooldownTimer); btn.disabled = false; btn.textContent = 'Resend email'; }
+      else btn.textContent = 'Resend email (' + n + 's)';
+    }, 1000);
+  }
+
+  document.getElementById('resend-btn').addEventListener('click', async e => {
+    const btn = e.currentTarget; verifyMsg.textContent = '';
+    try {
+      await sendVerify(auth.currentUser);
+      say('Verification email sent. Check your inbox and spam folder.', true);
+      startCooldown(btn);
+    } catch (err) {
+      say(err.code === 'auth/too-many-requests' ? 'Too many requests. Wait a few minutes and try again.' : err.message, false);
+    }
   });
+
+  document.getElementById('check-btn').addEventListener('click', async () => {
+    verifyMsg.textContent = '';
+    try {
+      await auth.currentUser.reload();
+      if (auth.currentUser.emailVerified) render(auth.currentUser);
+      else say('Not verified yet. Open the link in the email first.', false);
+    } catch (err) { say(err.message, false); }
+  });
+
+  document.getElementById('verify-signout').addEventListener('click', () => auth.signOut());
 
   document.getElementById('signout').addEventListener('click', () => auth.signOut());
 </script>
