@@ -67,15 +67,25 @@ window.GojoJava = (function () {
   // Board = array of 64 chars (index 0 = a8, 63 = h1). Uppercase = white, lowercase = black, '.' = empty.
   const START = 'rnbqkbnrpppppppp' + '.'.repeat(32) + 'PPPPPPPPRNBQKBNR';
   const GLYPH = { k: '\u265A', q: '\u265B', r: '\u265C', b: '\u265D', n: '\u265E', p: '\u265F' };
+  const BASE = '<path d="M11.5 40.5c0-2.2 1.6-4 3.4-4h15.2c1.8 0 3.4 1.8 3.4 4z"/>';
   const SVGP = {
-    p: '<circle cx="22.5" cy="13" r="5.5"/><path d="M16 35c0-8 3-10 6.5-13 3.5 3 6.5 5 6.5 13z"/><rect x="12.5" y="35" width="20" height="4" rx="1.5"/>',
-    r: '<path d="M12 39v-4h21v4zM14.5 35l1.5-15h13l1.5 15zM12 11h4.5v3.5h3V11h5v3.5h3V11H33v7H12z"/>',
-    n: '<path d="M13 39c0-10 3-14 8-18-3-1-5-3.5-5-6.5 0 0 6.5-6 11-3 4.5 3.5 7 12 7 27.5z"/><circle cx="24" cy="15" r="1.3" fill="#888" stroke="none"/>',
-    b: '<ellipse cx="22.5" cy="12" rx="4.2" ry="6"/><path d="M14.5 35c0-7 3-9.5 8-13 5 3.5 8 6 8 13z"/><rect x="12.5" y="35" width="20" height="4" rx="1.5"/>',
-    q: '<path d="M10 15l5.5 15 2.5-13 4.5 13 4.5-13 2.5 13L35 15l-2.5 22h-20z"/><rect x="12" y="37" width="21" height="3" rx="1.5"/>',
-    k: '<path d="M20.5 4h4v3h3v4h-3v3h-4v-3h-3V7h3z"/><path d="M12 38c0-11 4-14 10.5-17 6.5 3 10.5 6 10.5 17z"/><rect x="11" y="37" width="23" height="3" rx="1.5"/>'
+    p: '<ellipse cx="22.5" cy="19.5" rx="6.3" ry="1.9"/><circle cx="22.5" cy="12.5" r="5.3"/><path d="M17.2 36.5c0-8 1.6-12 5.3-15.5 3.7 3.5 5.3 7.5 5.3 15.5z"/>' + BASE,
+    r: '<path d="M13.5 13h4.2v3.2h3.5V13h3.6v3.2h3.5V13h4.2v7.5l-3.2 3 1.8 13.2H14.9l1.8-13.2-3.2-3z"/>' + BASE,
+    n: '<path d="M15 36.5c0-8.5 1.8-12.5 6.2-15.8-2.8-.4-5-2-6-4.7l4-7.8c2.2-3 6.3-4 9.8-2.3 5.3 2.6 8.2 9.3 8.2 18.8 0 4.5-.3 8.5-.3 11.8z"/><path d="M13.6 17.5c.8 1.8 2.4 3 4.4 3.5" fill="none"/><circle cx="25.5" cy="11.5" r="1.4" fill="#222" stroke="none"/>' + BASE,
+    b: '<circle cx="22.5" cy="5.6" r="1.8"/><path d="M22.5 7.5c3.7 0 5.6 3.1 5.6 6.4 0 3.2-2 5.2-3.2 7.1h-4.8c-1.2-1.9-3.2-3.9-3.2-7.1 0-3.3 1.9-6.4 5.6-6.4z"/><ellipse cx="22.5" cy="22" rx="6" ry="1.8"/><path d="M17 36.5c0-6 1.8-9 5.5-12.5 3.7 3.500 5.5 6.5 5.5 12.5z"/><path d="M20.5 12l4 4" fill="none"/>' + BASE,
+    q: '<path d="M10.5 14.5l4.8 14 3-12.5 4.2 12.5 4.2-12.5 3 12.5 4.8-14L33.5 36.500h-22z"/><circle cx="10.5" cy="13" r="2"/><circle cx="16.5" cy="10" r="2"/><circle cx="22.5" cy="9" r="2"/><circle cx="28.5" cy="10" r="2"/><circle cx="34.5" cy="13" r="2"/>' + BASE,
+    k: '<path d="M21 2.5h3v3.2h3.2v3H24v3.3h-3V8.7h-3.2v-3H21z"/><path d="M14 23c0-6 3.6-9.5 8.5-9.5S31 17 31 23z"/><path d="M15.5 36.5c0-8 2-11.5 7-14 5 2.5 7 6 7 14z"/>' + BASE
   };
-  const pieceSvg = (k, fill, line) => '<svg viewBox="0 0 45 45" width="86%" height="86%" aria-hidden="true"><g fill="' + fill + '" stroke="' + line + '" stroke-width="1.6" stroke-linejoin="round">' + SVGP[k] + '</g></svg>';
+  // Shaded, outlined piece with a soft shadow. The colour comes from the chosen piece set.
+  const shade = (hex, a) => '#' + [1, 3, 5].map(i => Math.max(0, Math.min(255, parseInt(hex.substr(i, 2), 16) + a)).toString(16).padStart(2, '0')).join('');
+  const lum = hex => (parseInt(hex.substr(1, 2), 16) * 299 + parseInt(hex.substr(3, 2), 16) * 587 + parseInt(hex.substr(5, 2), 16) * 114) / 1000;
+  function pieceSvg(k, fill) {
+    const id = 'pg' + fill.slice(1), line = lum(fill) > 128 ? shade(fill, -120) : shade(fill, 80);
+    return '<svg viewBox="0 0 45 45" width="92%" height="92%" aria-hidden="true"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="0">' +
+      '<stop offset="0" stop-color="' + shade(fill, 60) + '"/><stop offset=".45" stop-color="' + fill + '"/><stop offset="1" stop-color="' + shade(fill, -60) + '"/></linearGradient></defs>' +
+      '<ellipse cx="22.5" cy="41" rx="14" ry="2" fill="rgba(0,0,0,.3)"/>' +
+      '<g fill="url(#' + id + ')" stroke="' + line + '" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round">' + SVGP[k] + '</g></svg>';
+  }
   const N = [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]], R = [[1,0],[-1,0],[0,1],[0,-1]], B = [[1,1],[1,-1],[-1,1],[-1,-1]];
   const V = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 };
   const isW = p => p >= 'A' && p <= 'Z';
@@ -300,7 +310,7 @@ window.GojoJava = (function () {
         const s = flip ? 63 - n : n, p = g.b[s], d = document.createElement('div');
         d.className = 'cx-sq' + (s === sel ? ' sel' : '') + (last && (s === last.f || s === last.to) ? ' last' : '') + (s === ks ? ' chk' : '') + (targets.includes(s) ? ' mv' + (p !== '.' ? ' cap' : '') : '');
         d.style.background = ((s >> 3) + (s & 7)) % 2 ? th[2] : th[1];
-        if (p !== '.') { const w = isW(p); d.innerHTML = pieceSvg(p.toLowerCase(), w ? ps[1] : ps[2], w ? '#1a1a1a' : '#e8e8e8'); }
+        if (p !== '.') { const w = isW(p); d.innerHTML = pieceSvg(p.toLowerCase(), w ? ps[1] : ps[2]); }
         d.onclick = () => click(s); bd.appendChild(d);
       }
       lt.textContent = label(flip ? 'w' : 'b'); lb.textContent = label(flip ? 'b' : 'w');
