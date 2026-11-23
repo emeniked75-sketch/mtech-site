@@ -31,7 +31,8 @@ window.GojoJava = (function () {
   .cx-sq.chk{box-shadow:inset 0 0 0 100px rgba(220,50,50,.55)}
   .cx-sq.mv::after{content:"";width:28%;height:28%;border-radius:50%;background:rgba(10,19,34,.4);position:absolute;}
   .cx-sq.mv.cap::after{width:84%;height:84%;background:none;border:3px solid rgba(10,19,34,.5);}
-  .cx-sq span{position:relative;z-index:1}
+  .cx-sq svg{position:relative;z-index:1;pointer-events:none;}
+  .cx-sq{-webkit-tap-highlight-color:transparent;}
   .cx-row{display:flex;gap:.3rem;margin:.3rem 0 .5rem;flex-wrap:wrap;}
   .cx-opt{flex:1;padding:.4rem .5rem;border-radius:6px;border:1px solid #4a4945;background:#33322f;color:#e1e1dc;font:inherit;font-size:.78rem;cursor:pointer;}
   .cx-opt.on{background:#769656;border-color:#769656;color:#fff;}
@@ -66,6 +67,15 @@ window.GojoJava = (function () {
   // Board = array of 64 chars (index 0 = a8, 63 = h1). Uppercase = white, lowercase = black, '.' = empty.
   const START = 'rnbqkbnrpppppppp' + '.'.repeat(32) + 'PPPPPPPPRNBQKBNR';
   const GLYPH = { k: '\u265A', q: '\u265B', r: '\u265C', b: '\u265D', n: '\u265E', p: '\u265F' };
+  const SVGP = {
+    p: '<circle cx="22.5" cy="13" r="5.5"/><path d="M16 35c0-8 3-10 6.5-13 3.5 3 6.5 5 6.5 13z"/><rect x="12.5" y="35" width="20" height="4" rx="1.5"/>',
+    r: '<path d="M12 39v-4h21v4zM14.5 35l1.5-15h13l1.5 15zM12 11h4.5v3.5h3V11h5v3.5h3V11H33v7H12z"/>',
+    n: '<path d="M13 39c0-10 3-14 8-18-3-1-5-3.5-5-6.5 0 0 6.5-6 11-3 4.5 3.5 7 12 7 27.5z"/><circle cx="24" cy="15" r="1.3" fill="#888" stroke="none"/>',
+    b: '<ellipse cx="22.5" cy="12" rx="4.2" ry="6"/><path d="M14.5 35c0-7 3-9.5 8-13 5 3.5 8 6 8 13z"/><rect x="12.5" y="35" width="20" height="4" rx="1.5"/>',
+    q: '<path d="M10 15l5.5 15 2.5-13 4.5 13 4.5-13 2.5 13L35 15l-2.5 22h-20z"/><rect x="12" y="37" width="21" height="3" rx="1.5"/>',
+    k: '<path d="M20.5 4h4v3h3v4h-3v3h-4v-3h-3V7h3z"/><path d="M12 38c0-11 4-14 10.5-17 6.5 3 10.5 6 10.5 17z"/><rect x="11" y="37" width="23" height="3" rx="1.5"/>'
+  };
+  const pieceSvg = (k, fill, line) => '<svg viewBox="0 0 45 45" width="86%" height="86%" aria-hidden="true"><g fill="' + fill + '" stroke="' + line + '" stroke-width="1.6" stroke-linejoin="round">' + SVGP[k] + '</g></svg>';
   const N = [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]], R = [[1,0],[-1,0],[0,1],[0,-1]], B = [[1,1],[1,-1],[-1,1],[-1,-1]];
   const V = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 };
   const isW = p => p >= 'A' && p <= 'Z';
@@ -290,11 +300,7 @@ window.GojoJava = (function () {
         const s = flip ? 63 - n : n, p = g.b[s], d = document.createElement('div');
         d.className = 'cx-sq' + (s === sel ? ' sel' : '') + (last && (s === last.f || s === last.to) ? ' last' : '') + (s === ks ? ' chk' : '') + (targets.includes(s) ? ' mv' + (p !== '.' ? ' cap' : '') : '');
         d.style.background = ((s >> 3) + (s & 7)) % 2 ? th[2] : th[1];
-        if (p !== '.') {
-          const sp = document.createElement('span'), w = isW(p);
-          sp.textContent = GLYPH[p.toLowerCase()] + '\uFE0E'; sp.style.color = w ? ps[1] : ps[2];
-          sp.style.textShadow = w ? '0 0 2px #000,0 0 3px #000' : '0 0 1px rgba(255,255,255,.45)'; d.appendChild(sp);
-        }
+        if (p !== '.') { const w = isW(p); d.innerHTML = pieceSvg(p.toLowerCase(), w ? ps[1] : ps[2], w ? '#1a1a1a' : '#e8e8e8'); }
         d.onclick = () => click(s); bd.appendChild(d);
       }
       lt.textContent = label(flip ? 'w' : 'b'); lb.textContent = label(flip ? 'b' : 'w');
