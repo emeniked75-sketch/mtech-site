@@ -23,9 +23,9 @@ window.GojoJava = (function () {
   .cx-main{flex:1 1 360px;max-width:520px;}
   .cx-side{flex:1 1 240px;max-width:340px;color:#e1e1dc;font-size:.85rem;}
   .cx-side h3{margin:0 0 .5rem;font-size:1.1rem;}
-  .cx-lab{font-weight:700;font-size:.9rem;color:#e1e1dc;padding:.35rem .1rem;}
-  .cx-board{display:grid;grid-template-columns:repeat(8,1fr);aspect-ratio:1;user-select:none;border-radius:4px;overflow:hidden;}
-  .cx-sq{display:flex;align-items:center;justify-content:center;font-size:clamp(1.7rem,7.2vw,3rem);line-height:1;cursor:pointer;position:relative;}
+  .cx-lab{min-height:2rem;font-weight:700;font-size:.9rem;color:#e1e1dc;padding:.35rem .1rem;}
+  .cx-board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));aspect-ratio:1/1;width:100%;user-select:none;border-radius:4px;overflow:hidden;}
+  .cx-sq{min-width:0;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:clamp(1.7rem,7.2vw,3rem);line-height:1;cursor:pointer;position:relative;}
   .cx-sq.last{box-shadow:inset 0 0 0 100px rgba(255,214,10,.3)}
   .cx-sq.sel{box-shadow:inset 0 0 0 100px rgba(20,160,200,.35)}
   .cx-sq.chk{box-shadow:inset 0 0 0 100px rgba(220,50,50,.55)}
@@ -36,7 +36,7 @@ window.GojoJava = (function () {
   .cx-opt{flex:1;padding:.4rem .5rem;border-radius:6px;border:1px solid #4a4945;background:#33322f;color:#e1e1dc;font:inherit;font-size:.78rem;cursor:pointer;}
   .cx-opt.on{background:#769656;border-color:#769656;color:#fff;}
   .cx-lbl{color:#96948f;font-size:.74rem;margin-top:.4rem;}
-  .cx-status{margin:.5rem 0;font-weight:700;}
+  .cx-status{min-height:2.6rem;margin:.5rem 0;font-weight:700;}
   .cx-moves{background:#1e1d1b;border-radius:6px;padding:.5rem .6rem;height:110px;overflow:auto;font-family:monospace;font-size:.8rem;color:#e1e1dc;white-space:pre-wrap;}
   .cc-in{width:100%;padding:.8rem 1rem;border-radius:10px;border:1px solid var(--line);background:#0b1628;color:#fff;font:inherit;font-size:1.1rem;}
   .cc-out{min-height:2.4rem;text-align:right;font-size:1.5rem;font-weight:700;padding:.6rem .2rem;word-break:break-all;}
